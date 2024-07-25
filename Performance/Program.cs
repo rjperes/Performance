@@ -15,15 +15,8 @@ namespace Performance
         public string B { get; set; } = string.Empty;
     }
 
-    [Orderer(SummaryOrderPolicy.FastestToSlowest)]
-    public class Instantiator
+    public static class ObjectExtensions
     {
-        static readonly Type _type = typeof(Target);
-        static readonly ConstructorInfo _ci = _type.GetConstructor(Type.EmptyTypes);
-        static readonly Expression<Func<Target>> _exp = () => new Target();
-        static readonly Func<Target> _func = _exp.Compile();
-        static readonly Func<object> _creator;
-
         public static bool IsNullOrDefault(this object @object, Type runtimeType)
         {
             if (@object == null) return true;
@@ -40,8 +33,18 @@ namespace Performance
             object defaultValue = Activator.CreateInstance(runtimeType);
 
             return defaultValue.Equals(@object);
-        }
-        
+        }        
+    }
+    
+    [Orderer(SummaryOrderPolicy.FastestToSlowest)]
+    public class Instantiator
+    {
+        static readonly Type _type = typeof(Target);
+        static readonly ConstructorInfo _ci = _type.GetConstructor(Type.EmptyTypes);
+        static readonly Expression<Func<Target>> _exp = () => new Target();
+        static readonly Func<Target> _func = _exp.Compile();
+        static readonly Func<object> _creator;
+
         static Instantiator()
         {
             var method = new DynamicMethod(string.Empty, typeof(object), null, _type, true);
