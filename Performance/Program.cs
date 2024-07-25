@@ -24,6 +24,24 @@ namespace Performance
         static readonly Func<Target> _func = _exp.Compile();
         static readonly Func<object> _creator;
 
+        public static bool IsNullOrDefault(this object @object, Type runtimeType)
+        {
+            if (@object == null) return true;
+
+            ArgumentNullException.ThrowIfNull(runtimeType, nameof(runtimeType));
+
+            // Handle non-null reference types.
+            if (!runtimeType.IsValueType) return false;
+
+            // Nullable, but not null
+            if (Nullable.GetUnderlyingType(runtimeType) != null) return false;
+
+            // Use CreateInstance as the most reliable way to get default value for a value type
+            object defaultValue = Activator.CreateInstance(runtimeType);
+
+            return defaultValue.Equals(@object);
+        }
+        
         static Instantiator()
         {
             var method = new DynamicMethod(string.Empty, typeof(object), null, _type, true);
